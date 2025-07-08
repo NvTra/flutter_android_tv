@@ -1,33 +1,18 @@
 import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
-import 'src/ui/home.dart';
-import 'src/ui/recentfocustraversal.dart';
-import 'src/ui/helper/inputhandler.dart';
+import 'package:flutter_tv_sample/src/router/app_router.dart';
 
 void main() {
-  if (kIsWeb) InputHandler.initialize();
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
-class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+class MyApp extends StatelessWidget {
+  MyApp({Key? key}) : super(key: key);
+  final _appRouter = AppRouter();
 
-  @override
-  State<MyApp> createState() => _MyAppState();
-}
-
-class _MyAppState extends State<MyApp> {
-  final _focusNode = RecentFocusNode(group: FocusGroup.root);
-
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: 'Flutter Demo',
       theme: ThemeData(
         // This is the theme of your application.
@@ -43,20 +28,8 @@ class _MyAppState extends State<MyApp> {
         brightness: Brightness.dark,
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
-      home: WillPopScope(
-        onWillPop: _willPopCallback,
-        child: Scaffold(
-          body: Focus(
-            focusNode: _focusNode,
-            descendantsAreFocusable: true,
-            child: const Home(),
-          ),
-        ),
-      ),
+      routerDelegate: _appRouter.delegate(),
+      routeInformationParser: _appRouter.defaultRouteParser(),
     );
   }
-}
-
-Future<bool> _willPopCallback() async {
-  return false;
 }

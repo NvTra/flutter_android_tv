@@ -1,22 +1,30 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_tv_sample/src/router/app_router.dart';
 import 'item/sidebaritem.dart';
 import 'recentfocustraversal.dart';
 import 'helper/relativesize.dart';
 import '../data/dataprovider.dart';
 import 'rows/pagerow.dart';
+import 'package:auto_route/auto_route.dart';
 
-class Home extends StatefulWidget {
-  const Home({super.key});
+@RoutePage()
+class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
 
   @override
-  State<Home> createState() => HomeState();
+  State<HomeScreen> createState() => HomeScreenState();
 }
 
-class HomeState extends State<Home> implements FocusListener {
+class HomeScreenState extends State<HomeScreen> implements FocusListener {
   late double _maxWidth;
   List? pages;
   double _size = 300;
   int row = 0;
+
+  final FocusNode searchBarFocusNode = FocusNode();
+  String searchText = "";
+  FocusNode? lastFocusNode;
 
   get _widthLeft => RelativeSize.get(_size);
   get _widthRight => _maxWidth - _widthLeft;
@@ -33,13 +41,13 @@ class HomeState extends State<Home> implements FocusListener {
   void initState() {
     super.initState();
     FocusListener.add(this);
-
   }
 
   @override
   void dispose() {
-    super.dispose();
+    searchBarFocusNode.dispose();
     FocusListener.remove(this);
+    super.dispose();
   }
 
   void loadData() async {
@@ -47,6 +55,18 @@ class HomeState extends State<Home> implements FocusListener {
     setState(() {
       pages = data['pages'];
     });
+  }
+
+  Widget buildLoginButton(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: ElevatedButton(
+        onPressed: () {
+          context.router.push(const LoginRoute());
+        },
+        child: const Text('Đăng nhập'),
+      ),
+    );
   }
 
   @override
@@ -57,33 +77,55 @@ class HomeState extends State<Home> implements FocusListener {
     return LayoutBuilder(builder: (context, BoxConstraints constraints) {
       _maxWidth = constraints.maxWidth;
 
-      return Row(
-          children: <Widget>[
-            AnimatedContainer(
-                width: _widthLeft,
-                color: Colors.grey,
-                duration: const Duration(milliseconds: 250),
-                child: FocusTraversalGroup(
-                    policy: const RecentFocusTraversalPolicy(group: FocusGroup.sidebar),
-                    child: ListView.builder(
-                        itemCount: pages?.length ?? 0,
-                        padding: EdgeInsets.only(top: RelativeSize.get(100)),
-                        itemBuilder: (context, index) {
-                          return SidebarItem(id: index,
-                              title: pages?[index]['name'],
-                              icon: AssetImage(pages?[index]['icon']),
-                              w: RelativeSize.get(300),
-                              h: RelativeSize.get(100));
-                        }
-                    )
-                )
+      return Column(
+        children: [
+          buildLoginButton(context),
+          Expanded(
+            child: Row(
+              children: <Widget>[
+                AnimatedContainer(
+                    width: _widthLeft,
+                    color: Colors.grey,
+                    duration: const Duration(milliseconds: 250),
+                    child: FocusTraversalGroup(
+                        policy: const RecentFocusTraversalPolicy(
+                            group: FocusGroup.sidebar),
+                        child: ListView.builder(
+                            itemCount: pages?.length ?? 0,
+                            padding:
+                                EdgeInsets.only(top: RelativeSize.get(100)),
+                            itemBuilder: (context, index) {
+                              if (index == 0) {
+                                return SidebarItem(
+                                  id: index,
+                                  title: pages?[index]['name'],
+                                  icon: AssetImage(pages?[index]['icon']),
+                                  w: RelativeSize.get(300),
+                                  h: RelativeSize.get(100),
+                                  searchBarFocusNode: searchBarFocusNode,
+                                  lastFocusNodeSetter: (node) {
+                                    lastFocusNode = node;
+                                  },
+                                );
+                              } else {
+                                return SidebarItem(
+                                  id: index,
+                                  title: pages?[index]['name'],
+                                  icon: AssetImage(pages?[index]['icon']),
+                                  w: RelativeSize.get(300),
+                                  h: RelativeSize.get(100),
+                                );
+                              }
+                            }))),
+                AnimatedContainer(
+                  width: _widthRight,
+                  duration: const Duration(milliseconds: 250),
+                  child: PageRow(categories: pages?[row]['categories']),
+                ),
+              ],
             ),
-            AnimatedContainer(
-              width: _widthRight,
-              duration: const Duration(milliseconds: 250),
-              child: PageRow(categories: pages?[row]['categories']),
-            ),
-          ]
+          ),
+        ],
       );
     });
   }

@@ -23,7 +23,7 @@ enum FocusGroup {
   listRow,
 }
 
-class RecentFocusNode extends FocusNode implements Comparable<RecentFocusNode>{
+class RecentFocusNode extends FocusNode implements Comparable<RecentFocusNode> {
   final FocusGroup group;
   static RecentFocusNode? root;
 
@@ -89,20 +89,21 @@ class RecentFocusTraversalPolicy extends FocusTraversalPolicy {
   }
 
   @override
-  FocusNode findFirstFocusInDirection(FocusNode currentNode,
-      TraversalDirection direction) {
+  FocusNode findFirstFocusInDirection(
+      FocusNode currentNode, TraversalDirection direction) {
     return FocusNode();
   }
 
-  @override
-  FocusNode findFirstFocus(FocusNode currentNode) {
-    return FocusNode();
-  }
+  // @override
+  // FocusNode findFirstFocus(FocusNode currentNode) {
+  //   return FocusNode();
+  // }
 
-  bool handleGroupNavigation(FocusNode currentNode,
-      TraversalDirection direction,
-      Iterable<FocusNode> nodes,) {
-
+  bool handleGroupNavigation(
+    FocusNode currentNode,
+    TraversalDirection direction,
+    Iterable<FocusNode> nodes,
+  ) {
     if (group == FocusGroup.sidebar) {
       switch (direction) {
         case TraversalDirection.left:
@@ -121,7 +122,8 @@ class RecentFocusTraversalPolicy extends FocusTraversalPolicy {
           }
           break;
       }
-    } else { // horizontal
+    } else {
+      // horizontal
       switch (direction) {
         case TraversalDirection.left:
           if (nodes.first == currentNode) {
@@ -167,7 +169,11 @@ class RecentFocusTraversalPolicy extends FocusTraversalPolicy {
         var max = nodes.sorted().last.row;
 
         var nextRow = node.row + diff;
-        nextRow = nextRow > max ? max : nextRow < 0 ? 0 : nextRow;
+        nextRow = nextRow > max
+            ? max
+            : nextRow < 0
+                ? 0
+                : nextRow;
 
         var next = nodes
             .where((n) => n.row == nextRow)
@@ -201,13 +207,12 @@ class RecentFocusTraversalPolicy extends FocusTraversalPolicy {
     return (a.rect.left - b.rect.left).toInt();
   }
 
-  int _descendingOrderByHorizontal(FocusNode a, FocusNode b){
+  int _descendingOrderByHorizontal(FocusNode a, FocusNode b) {
     return (b.rect.left - a.rect.left).toInt();
   }
 
   FocusNode _selectNode(FocusNode node, TraversalDirection direction,
       List<FocusNode> candidates) {
-
     switch (direction) {
       case TraversalDirection.up:
         candidates = candidates
@@ -240,7 +245,6 @@ class RecentFocusTraversalPolicy extends FocusTraversalPolicy {
 
   FocusNode _moveFocus(FocusNode node, TraversalDirection direction,
       List<FocusNode> candidates) {
-
     final next = _selectNode(node, direction, candidates);
     if (next == node) return node;
 
@@ -260,9 +264,8 @@ class RecentFocusTraversalPolicy extends FocusTraversalPolicy {
   }
 
   @override
-  Iterable<FocusNode> sortDescendants(Iterable<FocusNode> descendants,
-      FocusNode currentNode) {
-
+  Iterable<FocusNode> sortDescendants(
+      Iterable<FocusNode> descendants, FocusNode currentNode) {
     int Function(FocusNode, FocusNode) compare;
 
     if (currentNode is RecentFocusNode &&
@@ -272,7 +275,6 @@ class RecentFocusTraversalPolicy extends FocusTraversalPolicy {
       compare = (a, b) => (a.offset.dx - b.offset.dx).toInt();
     }
 
-    return descendants.toList()
-      ..sort(compare);
+    return descendants.toList()..sort(compare);
   }
 }
